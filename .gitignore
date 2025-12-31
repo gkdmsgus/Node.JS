@@ -1,0 +1,11 @@
+#personal preferences
+/.vscode
+
+# environment variable
+.env
+
+#auto gen contents
+/src/spec
+/src/routes
+/dist
+/node_modules
