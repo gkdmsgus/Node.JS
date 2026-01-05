@@ -60,10 +60,6 @@ jobs:
         run: |
           ssh albalog 'cd /app && sudo docker compose ps'
 
-      - name: Clean old images
+      - name: Clean old docker
         run: |
-          ssh albalog 'cd /app && sudo docker image prune -f'
-
-      - name: Clean old containers
-        run: |
-          ssh albalog 'cd /app && sudo docker container prune -f'
+          ssh albalog 'sudo docker system prune -f'
