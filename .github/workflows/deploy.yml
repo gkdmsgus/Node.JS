@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $HOST_NAME >> ~/.ssh/known_hosts
+
+          cat >> ~/.ssh/config << END
+          Host albalog
+            HostName $HOST_NAME
+            User $USER
+            IdentityFile ~/.ssh/id_rsa
+          END
+        env:
+          SSH_KEY: ${{secrets.SSH_KEY}}
+          HOST_NAME: ${{secrets.HOST_NAME}}
+          USER: ubuntu
+
+      - name: Copy Workspace
+        run: |
+          ssh albalog 'sudo mkdir -p /app'
+          ssh albalog 'sudo chown ubuntu:ubuntu /app'
+          rsync -avz --delete \
+            --exclude '.git*' \
+            --exclude 'node_modules' \
+            ./ albalog:/app/
+
+      - name: Configure env
+        run: |
+          ssh albalog "cat > /app/.env << END
+          PORT=$PORT
+          END"
+
+          ssh albalog "cat > /app/.mysql_env << END
+          MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD
+          END"
+        env:
+          PORT: ${{secrets.PORT}}
+          MYSQL_PASSWORD: ${{secrets.MYSQL_PASSWORD}}
+
+      - name: Compose Docker
+        run: |
+          ssh albalog 'cd /app && sudo docker compose up --build -d'
+
+      - name: Check app status
+        run: |
+          ssh albalog 'cd /app && sudo docker compose ps'
+
+      - name: Clean old docker
+        run: |
+          ssh albalog 'sudo docker system prune -f'
