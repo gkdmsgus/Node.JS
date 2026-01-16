@@ -13,7 +13,7 @@ class UserRepository {
    */
   async findUserById(userId: Uint8Array) {
     const user = await prisma.user.findUnique({
-      where: { user_id: userId },
+      where: { user_id: userId as Uint8Array<ArrayBuffer> },
       include: {
         settlement_info: true, // 정산 정보 포함
       },
@@ -42,7 +42,7 @@ class UserRepository {
     },
   ) {
     return await prisma.user.update({
-      where: { user_id: userId },
+      where: { user_id: userId as Uint8Array<ArrayBuffer> },
       data,
     });
   }
@@ -55,7 +55,7 @@ class UserRepository {
   async getUserWorkCount(userId: Uint8Array): Promise<number> {
     return await prisma.user_work_log.count({
       where: {
-        user_id: userId,
+        user_id: userId as Uint8Array<ArrayBuffer>,
         status: 'done', // 완료된 근무만 카운트
       },
     });
@@ -68,7 +68,7 @@ class UserRepository {
    */
   async getUserAverageRating(userId: Uint8Array): Promise<number> {
     const reviews = await prisma.store_review.findMany({
-      where: { user_id: userId },
+      where: { user_id: userId as Uint8Array<ArrayBuffer> },
       select: {
         total_score: true,
       },
@@ -91,7 +91,7 @@ class UserRepository {
    */
   async getSettlementInfo(userId: Uint8Array) {
     return await prisma.settlement_info.findUnique({
-      where: { user_id: userId },
+      where: { user_id: userId as Uint8Array<ArrayBuffer> },
     });
   }
 
@@ -109,10 +109,10 @@ class UserRepository {
     },
   ) {
     return await prisma.settlement_info.upsert({
-      where: { user_id: userId },
+      where: { user_id: userId as Uint8Array<ArrayBuffer> },
       update: data,
       create: {
-        user_id: userId,
+        user_id: userId as Uint8Array<ArrayBuffer>,
         ...data,
       },
     });
