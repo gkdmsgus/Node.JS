@@ -13,3 +13,5 @@ const adapter = new PrismaMariaDb(databaseUrl);
 
 // PrismaClient 생성
 const prisma = new PrismaClient({ adapter });
+
+export default prisma;
