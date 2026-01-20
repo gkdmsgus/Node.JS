@@ -1,5 +1,5 @@
-import ReviewRepository from '../repository/ReviewRepository';
-import { ReviewResponseDto, ReviewListResponseDto, UpdateReviewRequestDto } from '../DTO/ReviewDto';
+import ReviewRepository from '../repository/review_repository';
+import { ReviewResponseDto, ReviewListResponseDto, UpdateReviewRequestDto } from '../DTO/review_dto';
 
 /**
  * Review Service

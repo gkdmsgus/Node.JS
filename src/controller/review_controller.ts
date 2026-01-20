@@ -1,6 +1,6 @@
 import { Controller, Get, Put, Delete, Route, Tags, Path, Body, Query, SuccessResponse, Response } from 'tsoa';
-import ReviewService from '../service/ReviewService';
-import { ReviewResponseDto, ReviewListResponseDto, UpdateReviewRequestDto } from '../DTO/ReviewDto';
+import ReviewService from '../service/review_service';
+import { ReviewResponseDto, ReviewListResponseDto, UpdateReviewRequestDto } from '../DTO/review_dto';
 import { TsoaSuccessResponse } from '../config/response_interface';
 
 /**
