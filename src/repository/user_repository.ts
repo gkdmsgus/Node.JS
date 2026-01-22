@@ -11,7 +11,21 @@ class UserRepository {
    * @param userId - 사용자 ID (Binary(16) UUID)
    * @returns 사용자 정보
    */
-  async findUserById(userId: Uint8Array) {
+  async findUserById(userId: Uint8Array): Promise<{
+    user_id: Uint8Array;
+    user_name: string | null;
+    user_birth: Date | null;
+    gender: 'male' | 'female' | null;
+    profile_image: string | null;
+    income_goal: number | null;
+    email: string;
+    settlement_info: {
+      user_id: Uint8Array;
+      bank_name: string | null;
+      account_number: string | null;
+      account_holder: string | null;
+    } | null;
+  }> {
     const user = await prisma.user.findUnique({
       where: { user_id: userId as Uint8Array<ArrayBuffer> },
       include: {
@@ -40,7 +54,15 @@ class UserRepository {
       gender?: 'male' | 'female';
       profile_image?: string;
     },
-  ) {
+  ): Promise<{
+    user_id: Uint8Array;
+    user_name: string | null;
+    user_birth: Date | null;
+    gender: 'male' | 'female' | null;
+    profile_image: string | null;
+    income_goal: number | null;
+    email: string;
+  }> {
     return await prisma.user.update({
       where: { user_id: userId as Uint8Array<ArrayBuffer> },
       data,
@@ -86,7 +108,12 @@ class UserRepository {
    * @param userId - 사용자 ID
    * @returns 정산 정보 (은행명, 계좌번호, 예금주)
    */
-  async getSettlementInfo(userId: Uint8Array) {
+  async getSettlementInfo(userId: Uint8Array): Promise<{
+    user_id: Uint8Array;
+    bank_name: string | null;
+    account_number: string | null;
+    account_holder: string | null;
+  } | null> {
     return await prisma.settlement_info.findUnique({
       where: { user_id: userId as Uint8Array<ArrayBuffer> },
     });
@@ -104,7 +131,12 @@ class UserRepository {
       account_number?: string;
       account_holder?: string;
     },
-  ) {
+  ): Promise<{
+    user_id: Uint8Array;
+    bank_name: string | null;
+    account_number: string | null;
+    account_holder: string | null;
+  }> {
     return await prisma.settlement_info.upsert({
       where: { user_id: userId as Uint8Array<ArrayBuffer> },
       update: data,

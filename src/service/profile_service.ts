@@ -1,5 +1,7 @@
 import UserRepository from '../repository/user_repository';
 import { ProfileResponseDto, UpdateProfileRequestDto } from '../DTO/profile_dto';
+import { bufferToUuid } from '../util/uuid_util';
+import { formatDate, calculateAge } from '../util/date_util';
 
 /**
  * Profile Service
@@ -22,13 +24,13 @@ class ProfileService {
     const trustScore = await UserRepository.getUserAverageRating(userId);
 
     // 4. 생년월일에서 나이 계산
-    const age = this.calculateAge(user.user_birth);
+    const age = calculateAge(user.user_birth);
 
     // 5. DTO 형식으로 변환해서 반환
     return {
-      userId: this.bufferToUuid(user.user_id),
+      userId: bufferToUuid(user.user_id),
       userName: user.user_name || '',
-      userBirth: user.user_birth ? this.formatDate(user.user_birth) : '',
+      userBirth: user.user_birth ? formatDate(user.user_birth) : '',
       age,
       gender: user.gender || 'male',
       profileImage: user.profile_image || undefined,
@@ -51,7 +53,12 @@ class ProfileService {
     data: UpdateProfileRequestDto,
   ): Promise<ProfileResponseDto> {
     // 1. 데이터 변환 (DTO → DB 형식)
-    const updateData: any = {};
+    const updateData: {
+      user_name?: string;
+      user_birth?: Date;
+      gender?: 'male' | 'female';
+      profile_image?: string;
+    } = {};
 
     if (data.userName) {
       updateData.user_name = data.userName;
@@ -71,49 +78,6 @@ class ProfileService {
 
     // 3. 업데이트된 프로필 조회 후 반환
     return this.getProfile(userId);
-  }
-
-  /**
-   * 생년월일에서 나이 계산
-   * @param birthDate - 생년월일
-   * @returns 나이
-   */
-  private calculateAge(birthDate: Date | null): number {
-    if (!birthDate) return 0;
-
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-
-    // 생일이 아직 안 지났으면 -1
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-
-    return age;
-  }
-
-  /**
-   * Date를 "YYYY-MM-DD" 문자열로 변환
-   * @param date - 날짜
-   * @returns 포맷된 문자열
-   */
-  private formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  /**
-   * Buffer(Binary UUID)를 문자열 UUID로 변환
-   * @param buffer - Uint8Array 형식의 UUID
-   * @returns 문자열 UUID
-   */
-  private bufferToUuid(buffer: Uint8Array): string {
-    const hex = Buffer.from(buffer).toString('hex');
-    return `${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20, 32)}`;
   }
 }
 

@@ -2,6 +2,7 @@ import { Controller, Get, Put, Route, Tags, Path, Body, SuccessResponse, Respons
 import ProfileService from '../service/profile_service';
 import { ProfileResponseDto, UpdateProfileRequestDto } from '../DTO/profile_dto';
 import { TsoaSuccessResponse } from '../config/response_interface';
+import { uuidToBuffer } from '../util/uuid_util';
 
 /**
  * Profile Controller
@@ -21,7 +22,7 @@ export class ProfileController extends Controller {
   @Response(500, 'Internal Server Error')
   public async getProfile(@Path() userId: string): Promise<TsoaSuccessResponse<ProfileResponseDto>> {
     // UUID 문자열을 Buffer로 변환
-    const userIdBuffer = this.uuidToBuffer(userId);
+    const userIdBuffer = uuidToBuffer(userId);
 
     // Service 호출
     const profile = await ProfileService.getProfile(userIdBuffer);
@@ -46,22 +47,12 @@ export class ProfileController extends Controller {
     @Body() requestBody: UpdateProfileRequestDto,
   ): Promise<TsoaSuccessResponse<ProfileResponseDto>> {
     // UUID 문자열을 Buffer로 변환
-    const userIdBuffer = this.uuidToBuffer(userId);
+    const userIdBuffer = uuidToBuffer(userId);
 
     // Service 호출
     const profile = await ProfileService.updateProfile(userIdBuffer, requestBody);
 
     // 성공 응답 반환
     return new TsoaSuccessResponse(profile);
-  }
-
-  /**
-   * UUID 문자열을 Uint8Array로 변환
-   * @param uuid - UUID 문자열 (예: "550e8400-e29b-41d4-a716-446655440000")
-   * @returns Uint8Array
-   */
-  private uuidToBuffer(uuid: string): Uint8Array {
-    const hex = uuid.replace(/-/g, '');
-    return Buffer.from(hex, 'hex');
   }
 }
