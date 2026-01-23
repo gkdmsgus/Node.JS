@@ -36,13 +36,25 @@ async function generateTokens(user: { id: Uint8Array; email: string }) {
 }
 
 async function refreshTokens(refreshToken: string) {
-  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!);
 
-  if (!decoded) {
-    throw new InvalidTokenError();
+    if (!decoded) {
+      throw new InvalidTokenError();
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { refresh_token: refreshToken },
+    });
+
+    if (!user) {
+      throw new InvalidTokenError('Invalid refresh token');
+    }
+
+    return generateTokens({ id: user.user_id, email: user.email });
+  } catch (err) {
+    throw new InvalidTokenError('Unknown error: refreshTokens', err);
   }
-
-  return generateTokens({ id: decoded.user_id, email: decoded.email });
 }
 
 export { generateTokens, refreshTokens };

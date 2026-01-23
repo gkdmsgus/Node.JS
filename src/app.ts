@@ -6,6 +6,7 @@ import * as swaggerUI from 'swagger-ui-express';
 import swaggerJson from './spec/swagger.json';
 import errorMiddleware from './middleware/error';
 import passport from 'passport';
+import cookieParser from 'cookie-parser';
 import { googleStrategy } from './config/auth';
 
 dotenv.config();
@@ -15,6 +16,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.use(passport.initialize());
 passport.use(googleStrategy);

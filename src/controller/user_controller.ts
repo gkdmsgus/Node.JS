@@ -52,7 +52,6 @@ export class UserController {
    * @returns 재발급된 액세스 토큰
    */
   @Get('/auth/refresh')
-  @Security('jwt')
   @SuccessResponse('200', 'Success')
   @Response<TsoaFailResponse<string>>('401', 'Unauthorized', {
     resultType: ResultType.FAIL,
@@ -66,10 +65,21 @@ export class UserController {
   public async refreshAccessToken(
     @Request() req: ExpressRequest,
   ): Promise<TsoaSuccessResponse<string>> {
-    const { refreshToken } = req.cookies.refreshToken;
+    const { refreshToken } = req.cookies || {};
+
+    if (refreshToken === undefined) {
+      throw new UserNotFoundError();
+    }
+
+    console.log(refreshToken);
 
     const result = await UserService.refreshAccessTokenService(refreshToken);
 
-    return result;
+    return new TsoaSuccessResponse<string>(result);
+  }
+
+  @Get('/logout')
+  public async logout(@Request() req: ExpressRequest): Promise<void> {
+    req.res.clearCookie('refreshToken');
   }
 }
