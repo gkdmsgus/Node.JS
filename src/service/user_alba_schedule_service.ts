@@ -3,7 +3,7 @@ import { CreateManualScheduleBody, CreateFromAlbaBody } from '../DTO/user_alba_s
 import { UserAlbaScheduleRepository } from '../repository/user_alba_schedule_repository';
 import { UserWorkLogRepository } from '../repository/user_work_log_repository';
 import { binToUuid } from '../util/uuid';
-import { CustomError } from '../DTO/errorDTO';
+import { CustomError } from '../DTO/error_DTO';
 
 const scheduleRepo = new UserAlbaScheduleRepository();
 const workLogRepo = new UserWorkLogRepository();
