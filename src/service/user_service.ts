@@ -1,4 +1,4 @@
-import { InvalidTokenError } from '../DTO/errorDTO';
+import { InvalidTokenError } from '../DTO/error_dto';
 import { refreshTokens } from '../config/jwt';
 
 class UserService {

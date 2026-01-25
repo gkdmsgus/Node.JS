@@ -1,6 +1,6 @@
 import * as express from 'express';
 import * as jwt from 'jsonwebtoken';
-import { InvalidTokenError } from '../DTO/errorDTO';
+import { InvalidTokenError } from '../DTO/error_dto';
 
 export function expressAuthentication(
   request: express.Request,
