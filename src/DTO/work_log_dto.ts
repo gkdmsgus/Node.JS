@@ -2,7 +2,7 @@
  * 오늘의 근무 스케줄 응답 DTO
  */
 export interface TodayScheduleResponseDto {
-  scheduleId: string;
+  workLogId: string;
   status: 'scheduled' | 'working' | 'done' | 'settled';
   statusLabel: string; // "예정", "근무 중", "근무 완료", "정산 완료"
   workplace: string; // "CU 홍대 점"

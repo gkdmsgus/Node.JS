@@ -15,49 +15,44 @@ const STATUS_LABELS: Record<string, string> = {
 
 /**
  * Work Log Service
- * 근무 스케줄 관련 비즈니스 로직 처리
+ * 근무 기록 관련 비즈니스 로직 처리
  */
 class WorkLogService {
   /**
-   * 오늘의 근무 리스트 조회
+   * 오늘의 근무 리스트 조회 (user_work_log 기반)
    * @param userId - 사용자 ID (Buffer 형식)
    * @returns 오늘의 근무 리스트
    */
   async getTodaySchedules(userId: Uint8Array): Promise<TodayWorkListResponseDto> {
     const today = new Date();
 
-    // Repository에서 오늘 날짜 스케줄 가져오기
-    const schedules = await WorkLogRepository.findSchedulesByDate(userId, today);
+    // Repository에서 오늘 날짜의 work_log 가져오기
+    const workLogs = await WorkLogRepository.findWorkLogsByDate(userId, today);
 
-    // DTO 형식으로 변환 (상태 조회 포함)
-    const scheduleDtos: TodayScheduleResponseDto[] = await Promise.all(
-      schedules.map(async (schedule) => {
-        const { startTime, endTime, workHours } = this.parseWorkTime(schedule.work_time);
-        const hourlyWage = schedule.hourly_wage || 0;
-        const totalWage = Math.round(hourlyWage * workHours);
+    // DTO 형식으로 변환
+    const scheduleDtos: TodayScheduleResponseDto[] = workLogs.map((log) => {
+      const { startTime, endTime, workHours } = this.parseWorkLogTime(
+        log.start_time,
+        log.end_time,
+        log.work_minutes,
+      );
 
-        // 해당 스케줄의 오늘 근무 상태 조회
-        const workLogStatus = await WorkLogRepository.findWorkLogStatus(
-          schedule.user_alba_schedule_id,
-          today,
-        );
+      const hourlyWage = log.alba_posting.hourly_rate || 0;
+      const totalWage = Math.round(hourlyWage * workHours);
+      const status = log.status || 'scheduled';
 
-        // 상태가 없으면 기본값 'scheduled'
-        const status = workLogStatus || 'scheduled';
-
-        return {
-          scheduleId: bufferToUuid(schedule.user_alba_schedule_id),
-          status,
-          statusLabel: STATUS_LABELS[status] || '알 수 없음',
-          workplace: schedule.workplace || '',
-          startTime,
-          endTime,
-          workHours,
-          hourlyWage,
-          totalWage,
-        };
-      }),
-    );
+      return {
+        workLogId: bufferToUuid(log.user_work_log_id),
+        status,
+        statusLabel: STATUS_LABELS[status] || '알 수 없음',
+        workplace: log.alba_posting.store.store_name || '',
+        startTime,
+        endTime,
+        workHours,
+        hourlyWage,
+        totalWage,
+      };
+    });
 
     return {
       date: formatDate(today),
@@ -67,58 +62,41 @@ class WorkLogService {
   }
 
   /**
-   * work_time 문자열 파싱 ("14:00~18:00" → 시작시간, 종료시간, 근무시간)
-   * @param workTime - 근무 시간 문자열
+   * work_log의 시간 정보 파싱
+   * @param startTime - 시작 시간 (DateTime)
+   * @param endTime - 종료 시간 (DateTime)
+   * @param workMinutes - 근무 시간 (분)
    * @returns 파싱된 시간 정보
    */
-  private parseWorkTime(workTime: string | null): {
+  private parseWorkLogTime(
+    startTime: Date | null,
+    endTime: Date | null,
+    workMinutes: number | null,
+  ): {
     startTime: string;
     endTime: string;
     workHours: number;
   } {
-    if (!workTime) {
-      return { startTime: '', endTime: '', workHours: 0 };
+    const formatTime = (date: Date | null): string => {
+      if (!date) return '';
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    };
+
+    const startTimeStr = formatTime(startTime);
+    const endTimeStr = formatTime(endTime);
+
+    // work_minutes가 있으면 사용, 없으면 시간으로 계산
+    let workHours = 0;
+    if (workMinutes) {
+      workHours = Math.round((workMinutes / 60) * 10) / 10;
+    } else if (startTime && endTime) {
+      const diffMs = endTime.getTime() - startTime.getTime();
+      workHours = Math.round((diffMs / (1000 * 60 * 60)) * 10) / 10;
     }
 
-    // "14:00~18:00" 또는 "14:00-18:00" 형식 파싱
-    const parts = workTime.split(/[~-]/);
-    if (parts.length !== 2) {
-      return { startTime: workTime, endTime: '', workHours: 0 };
-    }
-
-    const startTime = parts[0].trim();
-    const endTime = parts[1].trim();
-
-    // 근무 시간 계산
-    const workHours = this.calculateWorkHours(startTime, endTime);
-
-    return { startTime, endTime, workHours };
-  }
-
-  /**
-   * 시작/종료 시간으로 근무 시간 계산
-   * @param startTime - 시작 시간 ("14:00")
-   * @param endTime - 종료 시간 ("18:00")
-   * @returns 근무 시간 (시간 단위)
-   */
-  private calculateWorkHours(startTime: string, endTime: string): number {
-    const [startHour, startMin] = startTime.split(':').map(Number);
-    const [endHour, endMin] = endTime.split(':').map(Number);
-
-    if (isNaN(startHour) || isNaN(endHour)) {
-      return 0;
-    }
-
-    const startMinutes = startHour * 60 + (startMin || 0);
-    let endMinutes = endHour * 60 + (endMin || 0);
-
-    // 자정 넘어가는 경우 (예: 22:00 ~ 02:00)
-    if (endMinutes < startMinutes) {
-      endMinutes += 24 * 60;
-    }
-
-    const diffMinutes = endMinutes - startMinutes;
-    return Math.round((diffMinutes / 60) * 10) / 10; // 소수점 첫째자리
+    return { startTime: startTimeStr, endTime: endTimeStr, workHours };
   }
 }
 
