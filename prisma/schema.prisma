@@ -95,21 +95,6 @@ model store_category {
 }
 
 model store_review {
-<<<<<<< HEAD
-  review_id            Bytes     @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
-  store_id             Bytes     @db.Binary(16)
-  user_id              Bytes     @db.Binary(16)
-  total_score          Float?    @db.Float
-  kindness_rating      Float?    @db.Float
-  communication_rating Float?    @db.Float
-  settlement_rating    Float?    @db.Float
-  break_time_rating    Float?    @db.Float
-  review               String?   @db.Text
-  created_at           DateTime? @default(now()) @db.Timestamp(0)
-  updated_at           DateTime? @default(now()) @db.Timestamp(0)
-  store                store     @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_review")
-  user                 user      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_review")
-=======
   review_id            Bytes    @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
   store_id             Bytes    @db.Binary(16)
   user_id              Bytes    @db.Binary(16)
@@ -123,7 +108,6 @@ model store_review {
   updated_at           DateTime @default(now()) @updatedAt @db.Timestamp(0)
   store                store    @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_review")
   user                 user     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_user_TO_review")
->>>>>>> upstream/main
 
   @@index([store_id], map: "FK_store_TO_review")
   @@index([user_id], map: "FK_user_TO_review")
@@ -137,7 +121,7 @@ model user {
   profile_image        String?               @db.VarChar(256)
   income_goal          Int?
   email                String                @unique(map: "user_pk") @db.VarChar(40)
-  refresh_token        String?               @db.Text
+  refresh_token        String?               @unique(map: "user_pk_2") @db.VarChar(256)
   income_log           income_log[]
   notification         notification[]
   notification_setting notification_setting?
