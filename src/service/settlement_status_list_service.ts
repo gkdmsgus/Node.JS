@@ -1,5 +1,8 @@
-import { SettlementListResponseDTO } from '../DTO/settlement_dto';
-import { SettlementStatusQuery, SettlementSortQuery } from '../controller/settlement_controller';
+import { SettlementListResponseDTO } from '../DTO/settlement_status_list_dto';
+import {
+  SettlementStatusQuery,
+  SettlementSortQuery,
+} from '../controller/settlement_status_list_controller';
 // import { settlementRepository } from '../repositories/settlement.repository';
 
 interface ListMySettlementsParams {

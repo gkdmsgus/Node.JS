@@ -1,5 +1,5 @@
 import { Controller, Get, Route, Request, Tags, Query, SuccessResponse, Response } from 'tsoa';
-import { SettlementListResponseDTO } from '../DTO/settlement_dto';
+import { SettlementListResponseDTO } from '../DTO/settlement_status_list_dto';
 import { Request as ExpressRequest } from 'express';
 
 /**
