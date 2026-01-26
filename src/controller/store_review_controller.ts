@@ -7,7 +7,7 @@ import { addReview } from '../service/store_review_service';
  */
 @Route('api/store/review')
 @Tags('Store Review')
-export class ReviewController extends Controller{
+export class StoreReviewController extends Controller{
     /** 
      * 근무지 평가 API
      * @param requestBody에 리뷰 데이터 포함(userId,storeId,평가지수)
