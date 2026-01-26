@@ -1,9 +1,9 @@
 // src/service/user_alba_schedule.service.ts
-import { CreateManualScheduleBody, CreateFromAlbaBody } from '../DTO/user_alba_scheduleDTO';
+import { CreateManualScheduleBody, CreateFromAlbaBody } from '../DTO/user_alba_schedule_dto';
 import { UserAlbaScheduleRepository } from '../repository/user_alba_schedule_repository';
 import { UserWorkLogRepository } from '../repository/user_work_log_repository';
 import { binToUuid } from '../util/uuid';
-import { CustomError } from '../DTO/errorDTO';
+import { CustomError } from '../DTO/error_dto';
 
 const scheduleRepo = new UserAlbaScheduleRepository();
 const workLogRepo = new UserWorkLogRepository();

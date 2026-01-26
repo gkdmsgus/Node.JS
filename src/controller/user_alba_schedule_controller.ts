@@ -1,6 +1,6 @@
 import { Controller, Route, Post, Tags, SuccessResponse, Body, Response } from 'tsoa';
 import { TsoaSuccessResponse, TsoaFailResponse } from '../config/response_interface';
-import { CreateManualScheduleBody, CreateFromAlbaBody } from '../DTO/user_alba_scheduleDTO';
+import { CreateManualScheduleBody, CreateFromAlbaBody } from '../DTO/user_alba_schedule_dto';
 import * as userAlbaScheduleService from '../service/user_alba_schedule_service';
 export interface CreateScheduleSuccess {
   user_alba_schedule_id: string;
