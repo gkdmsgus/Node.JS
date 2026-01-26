@@ -1,56 +1,57 @@
-import { Controller, Get, Route, Request, Tags, Query, SuccessResponse, Response } from 'tsoa';
-import { SettlementListResponseDTO } from '../DTO/settlement_dto';
-import { Request as ExpressRequest } from 'express';
+import { Controller, Get, Put, Route, Tags, Path, Body, SuccessResponse, Response } from 'tsoa';
+import SettlementService from '../service/settlement_service';
+import { SettlementResponseDto, UpdateSettlementRequestDto } from '../DTO/settlement_dto';
+import { TsoaSuccessResponse } from '../config/response_interface';
 
 /**
- * settlement Controller
- * 내 정산 상태 목록 조회
- * - status로 탭 필터
- * - sort로 정렬
+ * Settlement Controller
+ * 계좌(정산) 정보 API
  */
-
-export type SettlementStatusQuery = 'all' | 'waiting' | 'paid' | 'unpaid';
-export type SettlementSortQuery = 'latest' | 'oldest';
-
-@Route('api/settlements')
-@Tags('settlement')
-export class settlementController extends Controller {
+@Route('api/users')
+@Tags('Settlement')
+export class SettlementController extends Controller {
   /**
-   * 내 정산 상태 목록 조회
-   * @param status 탭 필터 (all | waiting | paid | unpaid)
-   * @param sort 정렬 방식 (latest | oldest)
-   * @param cursor 커서(페이징)
-   * @param size 페이지 크기
-   * @returns 정산 상태 목록
+   * 계좌 정보 조회
+   * @param userId - 사용자 ID (UUID 문자열)
+   * @returns 계좌 정보
    */
-  @Get()
-  @SuccessResponse('200', '정산 상태 목록 조회 성공')
-  @Response(401, 'Unauthorized')
+  @Get('{userId}/settlement')
+  @SuccessResponse('200', '계좌 정보 조회 성공')
+  @Response(404, 'User Not Found')
   @Response(500, 'Internal Server Error')
-  public async getMysettlements(
-    @Request() req: ExpressRequest,
-    @Query() status: SettlementStatusQuery = 'all',
-    @Query() sort: SettlementSortQuery = 'latest',
-    @Query() cursor?: string,
-    @Query() size: number = 20,
-  ): Promise<SettlementListResponseDTO> {
-    const userId = (req as any).userId as string | undefined;
+  public async getSettlement(
+    @Path() userId: string,
+  ): Promise<TsoaSuccessResponse<SettlementResponseDto>> {
+    const userIdBuffer = this.uuidToBuffer(userId);
+    const settlement = await SettlementService.getSettlement(userIdBuffer);
+    return new TsoaSuccessResponse(settlement);
+  }
 
-    if (!userId) {
-      // 인증 미들웨어가 아직 없거나 userId를 주입하지 못한 경우
-      this.setStatus(401);
-      return {
-        items: [],
-        hasNext: false,
-      };
-    }
-    // TODO: Service 연결 후 실제 데이터 반환
-    // const result = await settlementService.listMySettlements(userId, { status, sort, cursor, size });
-    // return result;
+  /**
+   * 계좌 정보 수정
+   * @param userId - 사용자 ID (UUID 문자열)
+   * @param requestBody - 수정할 계좌 정보
+   * @returns 수정된 계좌 정보
+   */
+  @Put('{userId}/settlement')
+  @SuccessResponse('200', '계좌 정보 수정 성공')
+  @Response(400, 'Bad Request')
+  @Response(404, 'User Not Found')
+  @Response(500, 'Internal Server Error')
+  public async updateSettlement(
+    @Path() userId: string,
+    @Body() requestBody: UpdateSettlementRequestDto,
+  ): Promise<TsoaSuccessResponse<SettlementResponseDto>> {
+    const userIdBuffer = this.uuidToBuffer(userId);
+    const settlement = await SettlementService.updateSettlement(userIdBuffer, requestBody);
+    return new TsoaSuccessResponse(settlement);
+  }
 
-    return {
-      items: [],
-      hasNext: false,
-    };
+  /**
+   * UUID 문자열을 Uint8Array로 변환
+   */
+  private uuidToBuffer(uuid: string): Uint8Array {
+    const hex = uuid.replace(/-/g, '');
+    return Buffer.from(hex, 'hex');
   }
 }
