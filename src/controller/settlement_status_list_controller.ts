@@ -14,7 +14,7 @@ export type SettlementSortQuery = 'latest' | 'oldest';
 
 @Route('api/settlements')
 @Tags('settlement')
-export class settlementController extends Controller {
+export class SettlementStatusListController extends Controller {
   /**
    * 내 정산 상태 목록 조회
    * @param status 탭 필터 (all | waiting | paid | unpaid)

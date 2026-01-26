@@ -3,6 +3,7 @@ import {
   SettlementStatusQuery,
   SettlementSortQuery,
 } from '../controller/settlement_status_list_controller';
+import { settlementStatusListRepository } from '../repository/settlement_status_list_repository';
 // import { settlementRepository } from '../repositories/settlement.repository';
 
 interface ListMySettlementsParams {
@@ -12,7 +13,7 @@ interface ListMySettlementsParams {
   size: number;
 }
 
-class SettlementService {
+class SettlementStatusListService {
   /**
    * 내 정산 상태 목록 조회
    */
@@ -29,19 +30,20 @@ class SettlementService {
 
     const pageSize = Math.min(size, 20);
 
-    // const result = await settlementRepository.findMySettlements({
-    //   userId,
-    //   settlementStatus: settlementStatusFilter,
-    //   orderBy,
-    //   cursor,
-    //   size: pageSize,
-    // });
+    const result = await settlementStatusListRepository.findMySettlements({
+      userId,
+      settlementStatus: settlementStatusFilter,
+      sort,
+      cursor,
+      size: pageSize,
+    });
 
     return {
-      items: [],
-      hasNext: false,
+      items: result.items,
+      hasNext: result.hasNext,
+      nextCursor: result.nextCursor,
     };
   }
 }
 
-export const settlementService = new SettlementService();
+export const settlementStatusListService = new SettlementStatusListService();
