@@ -1,26 +1,24 @@
 // income_dashboard_service.ts
 import incomeDashboardRepository from '../repository/income_dashboard_repository';
-import { uuidToBuffer } from '../util/uuid_util'; // ✅ CHANGED: uuidToBin -> uuidToBuffer
-
-type GroupBy = 'store' | 'category';
+import { uuidToBuffer } from '../util/uuid_util';
 
 export class IncomeDashboardService {
-  public async getDashboard(userId: string, month: string, groupBy: GroupBy) {
-    // UUID string -> Uint8Array(실제로는 Buffer지만 타입은 Uint8Array)
+  public async getDashboard(userId: string, month: string) {
     const userIdBin = uuidToBuffer(userId);
 
     const { start, end, normalizedMonth } = this.getMonthRange(month);
 
     const [workLogs, userAlbas] = await Promise.all([
-
       incomeDashboardRepository.findWorkLogsForMonth(userIdBin, start, end),
       incomeDashboardRepository.findUserAlbaSettlementStatuses(userIdBin),
     ]);
 
     const settlementMap = new Map<string, string | null>();
     for (const ua of userAlbas) {
-      // Bytes(hex 키) 통일 위해 Buffer로 감싸서 hex 생성
-      settlementMap.set(Buffer.from(ua.alba_id as any).toString('hex'), ua.settlement_status ?? null);
+      settlementMap.set(
+        Buffer.from(ua.alba_id as any).toString('hex'),
+        ua.settlement_status ?? null,
+      );
     }
 
     let expectedIncome = 0;
@@ -35,30 +33,19 @@ export class IncomeDashboardService {
       if (minutes <= 0 || hourlyRate <= 0) continue;
 
       const income = Math.round((minutes * hourlyRate) / 60);
-
       expectedIncome += income;
 
       const settlement = settlementMap.get(Buffer.from(log.alba_id as any).toString('hex'));
 
-      const isCompleted = settlement === 'COMPLETED';
+      const isCompleted = settlement === 'unpaid';
       if (!isCompleted) continue;
 
       actualIncome += income;
 
-      if (groupBy === 'store') {
-        const storeName = log.alba_posting?.store?.store_name ?? '기타';
-        breakdownMap.set(storeName, (breakdownMap.get(storeName) ?? 0) + income);
-      } else {
-        const cats = log.alba_posting?.store?.store_category ?? [];
-        if (cats.length === 0) {
-          breakdownMap.set('uncategorized', (breakdownMap.get('uncategorized') ?? 0) + income);
-        } else {
-          for (const c of cats) {
-            const key = String(c.category_id);
-            breakdownMap.set(key, (breakdownMap.get(key) ?? 0) + income);
-          }
-        }
-      }
+      const rawStoreName = log.alba_posting?.store?.store_name ?? '기타';
+      const brandName = this.extractBrandName(rawStoreName);
+
+      breakdownMap.set(brandName, (breakdownMap.get(brandName) ?? 0) + income);
     }
 
     const breakdown = [...breakdownMap.entries()]
@@ -83,6 +70,23 @@ export class IncomeDashboardService {
 
     const normalizedMonth = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
     return { start, end, normalizedMonth };
+  }
+
+  private extractBrandName(storeName: string): string {
+    if (!storeName) return '기타';
+
+    let name = storeName.trim();
+
+    // 괄호 제거: "이디야커피(상봉점)" → "이디야커피"
+    name = name.replace(/\(.*?\)/g, '').trim();
+
+    // 뒤쪽 "~점/~지점/~점포" 제거
+    name = name.replace(/(점|지점|점포)$/g, '').trim();
+
+    // 공백 기준 첫 토큰
+    const firstToken = name.split(/\s+/)[0];
+
+    return firstToken || '기타';
   }
 }
 

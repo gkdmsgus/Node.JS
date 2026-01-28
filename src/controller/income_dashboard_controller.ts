@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Route,
-  Security,
-  Tags,
-  Request,
-} from 'tsoa';
+import { Controller, Get, Query, Route, Security, Tags, Request } from 'tsoa';
 import { Request as ExpressRequest } from 'express';
 import IncomeDashboardService from '../service/income_dashboard_service';
 
@@ -25,11 +17,7 @@ export class IncomeDashboardController extends Controller {
 
     return {
       resultType: 'SUCCESS',
-      data: await IncomeDashboardService.getDashboard(
-        userUuid,
-        month ?? '',
-        groupBy,
-      ),
+      data: await IncomeDashboardService.getDashboard(userUuid, month ?? ''),
     };
   }
 }
