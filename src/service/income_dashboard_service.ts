@@ -1,6 +1,7 @@
 import incomeDashboardRepository from '../repository/income_dashboard_repository';
 import { IncomeDashboardResponseDTO } from '../DTO/income_dashboard_dto';
 import { uuidToBuffer } from '../util/uuid_util';
+import { user_alba_settlement_status } from '@prisma/client';
 
 export class IncomeDashboardService {
   public async getDashboard(userId: string, month: string): Promise<IncomeDashboardResponseDTO> {
@@ -16,12 +17,9 @@ export class IncomeDashboardService {
 
     const incomeGoal = user?.income_goal ?? 0;
 
-    const settlementMap = new Map<string, string | null>();
+    const settlementMap: Map<string, user_alba_settlement_status | null> = new Map();
     for (const ua of userAlbas) {
-      settlementMap.set(
-        Buffer.from(ua.alba_id as any).toString('hex'),
-        (ua.settlement_status as any) ?? null,
-      );
+      settlementMap.set(Buffer.from(ua.alba_id).toString('hex'), ua.settlement_status ?? null);
     }
 
     let expectedIncome = 0;
@@ -38,9 +36,9 @@ export class IncomeDashboardService {
       const income = Math.round((minutes * hourlyRate) / 60);
       expectedIncome += income;
 
-      const settlement = settlementMap.get(Buffer.from(log.alba_id as any).toString('hex'));
+      const settlement = settlementMap.get(Buffer.from(log.alba_id).toString('hex')) ?? null;
 
-      const isCompleted = settlement === 'paid';
+      const isCompleted = settlement === user_alba_settlement_status.paid;
       if (!isCompleted) continue;
 
       actualIncome += income;
