@@ -13,6 +13,18 @@ export interface CreateManualScheduleBody {
   memo?: string;
 }
 
+export interface UpdateManualScheduleBody {
+  user_id: string;
+  workplace?: string;
+  work_date?: string;
+  work_time?: string;
+  day_of_week?: user_alba_schedule_day_of_week; // 실제 enum 타입으로 바꿔도 됨
+  repeat_type?: user_alba_schedule_repeat_type; // 실제 enum 타입으로 바꿔도 됨
+  repeat_days?: string;
+  hourly_wage?: number;
+  memo?: string;
+}
+
 // 알바 정보 기반 Body
 export interface CreateFromAlbaBody {
   user_id: string;
