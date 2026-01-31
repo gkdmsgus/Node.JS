@@ -69,9 +69,10 @@ class WorkLogService {
   /**
    * 출근하기 (status: scheduled → working)
    * @param workLogId - 근무 기록 ID (Buffer)
+   * @param userId - 사용자 ID (Buffer) - 권한 검증용
    * @returns 업데이트된 근무 기록 정보
    */
-  async checkIn(workLogId: Uint8Array): Promise<CheckInResponseDto> {
+  async checkIn(workLogId: Uint8Array, userId: Uint8Array): Promise<CheckInResponseDto> {
     // 1. 근무 기록 조회
     const workLog = await WorkLogRepository.findById(workLogId);
 
@@ -79,12 +80,17 @@ class WorkLogService {
       throw new Error('근무 기록을 찾을 수 없습니다.');
     }
 
-    // 2. 상태 검증 (scheduled 상태에서만 출근 가능)
+    // 2. 권한 검증 (본인의 근무 기록인지 확인)
+    if (Buffer.from(workLog.user_id).toString('hex') !== Buffer.from(userId).toString('hex')) {
+      throw new Error('본인의 근무 기록만 출근 처리할 수 있습니다.');
+    }
+
+    // 3. 상태 검증 (scheduled 상태에서만 출근 가능)
     if (workLog.status !== 'scheduled') {
       throw new Error(`출근할 수 없는 상태입니다. 현재 상태: ${workLog.status}`);
     }
 
-    // 3. 상태 업데이트 (scheduled → working)
+    // 4. 상태 업데이트 (scheduled → working)
     const updatedLog = await WorkLogRepository.updateStatus(workLogId, 'working');
 
     return {
