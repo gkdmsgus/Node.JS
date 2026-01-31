@@ -104,6 +104,10 @@ export async function update(
     throw new CustomError('EC400', 400, '수정할 값이 없습니다.', null);
   }
 
+  if (body.repeat_type !== undefined || body.repeat_days !== undefined) {
+  validateManual(body);
+}
+
   const updatedCount = await scheduleRepo.updateByIdAndUserId(
     userId,
     scheduleId,
