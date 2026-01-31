@@ -24,13 +24,16 @@ export interface CreateScheduleSuccess {
   user_alba_schedule_id: string;
 }
 
-export interface UpdateScheduleSuccess {
-  user_alba_schedule_id: string;
-}
+// export interface UpdateScheduleSuccess {
+//   resultType: 'SUCCESS';
+//   SuccessMessage: '유저 알바 스케줄 수정 성공';
+//   user_alba_schedule_id: string;
+// }
 
-export interface DeleteScheduleSuccess {
-  user_alba_schedule_id: string;
-}
+// export interface DeleteScheduleSuccess {
+
+//   user_alba_schedule_id: string;
+// }
 
 @Route('user/alba/schedule')
 @Tags('User Alba Schedule')
@@ -74,13 +77,13 @@ export class UserAlbaScheduleController extends Controller {
     @Body() body: CreateManualScheduleBody,
   ): Promise<TsoaSuccessResponse<CreateScheduleSuccess>> {
     const userUuid = (req as any).user?.id as string;
-    const id = await userAlbaScheduleService.createManual({ ...body, user_id: userUuid });
+    const id = await userAlbaScheduleService.createManual(userUuid, body);
     void body;
 
     this.setStatus(201);
-    return new TsoaSuccessResponse<CreateScheduleSuccess>({
-      user_alba_schedule_id: id,
-    });
+  return new TsoaSuccessResponse({
+    user_alba_schedule_id: id,
+  });
   }
 
   ////// // 유저 알바 정보 기반 //////
@@ -115,7 +118,7 @@ export class UserAlbaScheduleController extends Controller {
     @Body() body: CreateFromAlbaBody,
   ): Promise<TsoaSuccessResponse<CreateScheduleSuccess>> {
     const userUuid = (req as any).user?.id as string;
-    const id = await userAlbaScheduleService.createFromAlba({ ...body, user_id: userUuid });
+    const id = await userAlbaScheduleService.createFromAlba(userUuid, body);
 
     this.setStatus(201);
     return new TsoaSuccessResponse<CreateScheduleSuccess>({
@@ -152,15 +155,16 @@ export class UserAlbaScheduleController extends Controller {
     @Request() req: ExpressRequest,
     @Path() userAlbaScheduleId: string,
     @Body() body: UpdateManualScheduleBody,
-  ): Promise<TsoaSuccessResponse<UpdateScheduleSuccess>> {
+  ): Promise<TsoaSuccessResponse<any>> {
     const userUuid = (req as any).user?.id as string;
-    //await userAlbaScheduleService.update(userUuid, userAlbaScheduleId, body);
+    await userAlbaScheduleService.update(userUuid, userAlbaScheduleId, body);
 
     this.setStatus(200);
-    return new TsoaSuccessResponse<UpdateScheduleSuccess>({
+    return new TsoaSuccessResponse({
       user_alba_schedule_id: userAlbaScheduleId,
     });
   }
+
   /**
    * 내 유저 알바 스케줄 삭제 API (수동, 알바정보 기반 공통)
    */
@@ -185,13 +189,13 @@ export class UserAlbaScheduleController extends Controller {
   public async deleteSchedule(
     @Request() req: ExpressRequest,
     @Path() userAlbaScheduleId: string,
-  ): Promise<TsoaSuccessResponse<DeleteScheduleSuccess>> {
+  ): Promise<TsoaSuccessResponse<any>> {
     const userUuid = (req as any).user?.id as string;
 
-    //await userAlbaScheduleService.remove(userUuid, userAlbaScheduleId);
+    await userAlbaScheduleService.remove(userUuid, userAlbaScheduleId);
 
     this.setStatus(200);
-    return new TsoaSuccessResponse<DeleteScheduleSuccess>({
+    return new TsoaSuccessResponse({
       user_alba_schedule_id: userAlbaScheduleId,
     });
   }
