@@ -2,7 +2,6 @@ import { user_alba_schedule_day_of_week, user_alba_schedule_repeat_type } from '
 
 // 유저 직접입력 Body
 export interface CreateManualScheduleBody {
-  user_id: string;
   workplace?: string;
   work_date?: string;
   work_time?: string;
@@ -14,7 +13,6 @@ export interface CreateManualScheduleBody {
 }
 
 export interface UpdateManualScheduleBody {
-  user_id: string;
   workplace?: string;
   work_date?: string;
   work_time?: string;
@@ -27,6 +25,5 @@ export interface UpdateManualScheduleBody {
 
 // 알바 정보 기반 Body
 export interface CreateFromAlbaBody {
-  user_id: string;
   user_work_log_id: string; // 참조할 알바 정보의 ID
 }
