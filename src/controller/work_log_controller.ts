@@ -1,4 +1,4 @@
-import { Controller, Get, Route, Tags, SuccessResponse, Response, Request, Security } from 'tsoa';
+import { Controller, Get, Patch, Path, Route, Tags, SuccessResponse, Response, Request, Security } from 'tsoa';
 import { Request as ExpressRequest } from 'express';
 import WorkLogService from '../service/work_log_service';
 import { TodayWorkListResponseDto, CheckInResponseDto } from '../DTO/work_log_dto';
