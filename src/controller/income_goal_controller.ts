@@ -15,6 +15,7 @@ import { Request as ExpressRequest } from 'express';
 import { TsoaSuccessResponse, TsoaFailResponse } from '../config/response_interface';
 import { UpdateIncomeGoalRequestDTO, UpdateIncomeGoalResponseDTO } from '../DTO/income_goal_dto';
 import { incomeGoalService } from '../service/income_goal_service';
+import { CustomError } from '../DTO/error_dto';
 
 @Route('api/users')
 @Tags('Income Goal')
@@ -46,8 +47,7 @@ export class IncomeGoalController extends Controller {
     const userUuid = (req as any).user?.id as string;
 
     if (!userUuid) {
-      this.setStatus(401);
-      throw new Error('인증 정보에서 userId를 찾을 수 없습니다.');
+      throw new CustomError('EC401', 401, '인증 정보에서 userId를 찾을 수 없습니다.', null);
     }
 
     const result = await incomeGoalService.updateMyIncomeGoal({

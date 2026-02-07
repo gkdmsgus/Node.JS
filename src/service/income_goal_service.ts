@@ -3,6 +3,7 @@
 import { UpdateIncomeGoalResponseDTO } from '../DTO/income_goal_dto';
 import { incomeGoalRepository } from '../repository/income_goal_repository';
 import { uuidToBuffer } from '../util/uuid_util';
+import { CustomError } from '../DTO/error_dto';
 
 class IncomeGoalService {
   public async updateMyIncomeGoal(params: {
@@ -12,18 +13,18 @@ class IncomeGoalService {
     const { userIdUuid, incomeGoal } = params;
 
     if (!userIdUuid) {
-      throw new Error('userId가 없습니다.');
+      throw new CustomError('EC400', 400, 'userId가 전달되지 않았습니다.', null);
     }
 
     if (incomeGoal !== null) {
       if (typeof incomeGoal !== 'number' || Number.isNaN(incomeGoal)) {
-        throw new Error('incomeGoal은 숫자여야 합니다.');
+        throw new CustomError('EC400', 400, 'incomeGoal은 숫자여야 합니다.', null);
       }
       if (!Number.isInteger(incomeGoal)) {
-        throw new Error('incomeGoal은 정수여야 합니다.');
+        throw new CustomError('EC400', 400, 'incomeGoal은 정수여야 합니다.', null);
       }
       if (incomeGoal < 0) {
-        throw new Error('incomeGoal은 0 이상이어야 합니다.');
+        throw new CustomError('EC400', 400, 'incomeGoal은 0 이상이어야 합니다.', null);
       }
     }
 
