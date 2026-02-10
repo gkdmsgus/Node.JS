@@ -33,6 +33,57 @@ class ScheduleRepository {
   }
 
   /**
+   * 일정 생성 + work_log 동시 생성 (트랜잭션)
+   * 홈 리스트에 노출되도록 user_work_log도 함께 생성
+   */
+  async createScheduleWithWorkLog(
+    scheduleData: {
+      user_id: Uint8Array;
+      workplace: string;
+      work_date: string;
+      work_time: string;
+      hourly_wage: number;
+      memo?: string;
+    },
+    workLogData: {
+      workDate: Date;
+      startTime: Date | null;
+      endTime: Date | null;
+      workMinutes: number | null;
+    },
+  ) {
+    return await prisma.$transaction(async (tx) => {
+      // 1. 일정 생성
+      const schedule = await tx.user_alba_schedule.create({
+        data: {
+          user_id: scheduleData.user_id as Uint8Array<ArrayBuffer>,
+          workplace: scheduleData.workplace,
+          work_date: scheduleData.work_date,
+          work_time: scheduleData.work_time,
+          hourly_wage: scheduleData.hourly_wage,
+          memo: scheduleData.memo || null,
+          repeat_type: 'none',
+        },
+      });
+
+      // 2. work_log 생성 (schedule_id 연결)
+      await tx.user_work_log.create({
+        data: {
+          user_id: scheduleData.user_id as Uint8Array<ArrayBuffer>,
+          user_alba_schedule_id: schedule.user_alba_schedule_id,
+          work_date: workLogData.workDate,
+          start_time: workLogData.startTime,
+          end_time: workLogData.endTime,
+          work_minutes: workLogData.workMinutes,
+          status: 'scheduled',
+        },
+      });
+
+      return schedule;
+    });
+  }
+
+  /**
    * 일정 ID로 일정 조회
    * @param scheduleId - 일정 ID (Binary UUID)
    * @returns 일정 정보
