@@ -37,13 +37,13 @@ class UserPreferredRegionRepository {
   /**
    * 주요 활동 지역 추가
    * @param userId 사용자 ID (Buffer)
-   * @param regionId 지역 ID (Buffer)
+   * @param regionId 지역 ID (number)
    */
-  async create(userId: Uint8Array, regionId: Uint8Array) {
+  async create(userId: Uint8Array, regionId: number) {
     return await prisma.user_preferred_region.create({
       data: {
         user_id: userId as Uint8Array<ArrayBuffer>,
-        region_id: regionId as Uint8Array<ArrayBuffer>,
+        region_id: regionId,
       },
       include: {
         region: true,
@@ -54,14 +54,14 @@ class UserPreferredRegionRepository {
   /**
    * 주요 활동 지역 삭제
    * @param userId 사용자 ID (Buffer)
-   * @param regionId 지역 ID (Buffer)
+   * @param regionId 지역 ID (number)
    */
-  async delete(userId: Uint8Array, regionId: Uint8Array) {
+  async delete(userId: Uint8Array, regionId: number) {
     return await prisma.user_preferred_region.delete({
       where: {
-        user_id_region_id: {
+        region_id_user_id: {
           user_id: userId as Uint8Array<ArrayBuffer>,
-          region_id: regionId as Uint8Array<ArrayBuffer>,
+          region_id: regionId,
         },
       },
     });
@@ -70,14 +70,14 @@ class UserPreferredRegionRepository {
   /**
    * 특정 지역이 이미 등록되어 있는지 확인
    * @param userId 사용자 ID (Buffer)
-   * @param regionId 지역 ID (Buffer)
+   * @param regionId 지역 ID (number)
    */
-  async exists(userId: Uint8Array, regionId: Uint8Array): Promise<boolean> {
+  async exists(userId: Uint8Array, regionId: number): Promise<boolean> {
     const result = await prisma.user_preferred_region.findUnique({
       where: {
-        user_id_region_id: {
+        region_id_user_id: {
           user_id: userId as Uint8Array<ArrayBuffer>,
-          region_id: regionId as Uint8Array<ArrayBuffer>,
+          region_id: regionId,
         },
       },
     });
@@ -86,12 +86,12 @@ class UserPreferredRegionRepository {
 
   /**
    * 지역 정보 조회 (ID로)
-   * @param regionId 지역 ID (Buffer)
+   * @param regionId 지역 ID (number)
    */
-  async findRegionById(regionId: Uint8Array) {
+  async findRegionById(regionId: number) {
     return await prisma.region.findUnique({
       where: {
-        region_id: regionId as Uint8Array<ArrayBuffer>,
+        region_id: regionId,
       },
     });
   }
