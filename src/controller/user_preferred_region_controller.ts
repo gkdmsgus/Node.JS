@@ -32,16 +32,6 @@ import { uuidToBuffer } from '../util/uuid_util';
 @Tags('User Preferred Region')
 export class UserPreferredRegionController extends Controller {
   /**
-   * UUID 형식 검증
-   * @param uuid UUID 문자열
-   */
-  private validateUuid(uuid: string): boolean {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-  }
-
-  /**
    * 주요 활동 지역 목록 조회 API
    * @param req Express Request (JWT에서 userId 추출)
    * @returns 주요 활동 지역 목록
@@ -83,18 +73,12 @@ export class UserPreferredRegionController extends Controller {
   ): Promise<TsoaSuccessResponse<AddPreferredRegionResponseDto>> {
     const userId = (req.user as unknown as { id: string }).id;
 
-    if (!this.validateUuid(requestBody.regionId)) {
-      this.setStatus(400);
-      throw new Error('유효하지 않은 지역 ID 형식입니다.');
-    }
-
     const userIdBuffer = uuidToBuffer(userId);
-    const regionIdBuffer = uuidToBuffer(requestBody.regionId);
 
     try {
       const result = await UserPreferredRegionService.addPreferredRegion(
         userIdBuffer,
-        regionIdBuffer,
+        requestBody.regionId,
       );
       this.setStatus(201);
       return new TsoaSuccessResponse(result);
@@ -115,7 +99,7 @@ export class UserPreferredRegionController extends Controller {
   /**
    * 주요 활동 지역 삭제 API
    * @param req Express Request (JWT에서 userId 추출)
-   * @param regionId 지역 ID (UUID 문자열)
+   * @param regionId 지역 ID (숫자)
    */
   @Delete('me/preferred-regions/{regionId}')
   @Security('jwt')
@@ -126,22 +110,16 @@ export class UserPreferredRegionController extends Controller {
   @Response(500, 'Internal Server Error')
   public async removePreferredRegion(
     @Request() req: ExpressRequest,
-    @Path() regionId: string,
+    @Path() regionId: number,
   ): Promise<void> {
     const userId = (req.user as unknown as { id: string }).id;
 
-    if (!this.validateUuid(regionId)) {
-      this.setStatus(400);
-      throw new Error('유효하지 않은 지역 ID 형식입니다.');
-    }
-
     const userIdBuffer = uuidToBuffer(userId);
-    const regionIdBuffer = uuidToBuffer(regionId);
 
     try {
       await UserPreferredRegionService.removePreferredRegion(
         userIdBuffer,
-        regionIdBuffer,
+        regionId,
       );
       this.setStatus(204);
     } catch (error) {
