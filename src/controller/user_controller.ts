@@ -48,7 +48,7 @@ export class UserController extends Controller {
     // 4. Access Token은 JSON 응답으로 보내거나 쿼리 파라미터로 리다이렉트
     // 프론트엔드 대시보드로 리다이렉트 시 예시:
     // 나중에 실제 주소로 리다이렉트 할 것
-    req.res.redirect(`http://localhost:5173/home?accessToken=${accessToken}`);
+    req.res.redirect(`http://localhost:5173/?accessToken=${accessToken}`);
   }
 
   @Get('/info')
