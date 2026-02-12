@@ -43,6 +43,7 @@ export const findPostingByFilter = async(data:SearchAlbaRepoParams):Promise<Sear
     albaId:bufferToUuid(alba_id),
     storeId:bufferToUuid(store_id),
     storeName:store.store_name,
+    storeAddress:store.store_address,
     startTime:work_schedule?.start_time||new Date(),
     endTime:work_schedule?.end_time||new Date(),
     dayOfWeek:work_schedule?.day_of_week||"",

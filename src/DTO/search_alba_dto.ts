@@ -10,6 +10,7 @@ export interface SearchAlbaResponseDto{
     albaId:string,
     storeId:string,
     storeName:string,
+    storeAddress:string,
     startTime:Date,
     endTime:Date,
     dayOfWeek:string,
