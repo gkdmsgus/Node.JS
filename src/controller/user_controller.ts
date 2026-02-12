@@ -53,11 +53,11 @@ export class UserController extends Controller {
 
     if (isNew) {
       req.res.redirect(
-        `http://localhost:5173/signup?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+        `https://albalog.vercel.app/signup?accessToken=${accessToken}&refreshToken=${refreshToken}`,
       );
     } else {
       req.res.redirect(
-        `http://localhost:5173/home?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+        `https://albalog.vercel.app/home?accessToken=${accessToken}&refreshToken=${refreshToken}`,
       );
     }
   }
