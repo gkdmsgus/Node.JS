@@ -38,17 +38,19 @@ export class UserController extends Controller {
     const { accessToken, refreshToken } = await generateTokens({ id: user_id, email: email });
 
     // 3. 보안 쿠키에 Refresh Token 설정
-    req.res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-    });
+    // req.res.cookie('refreshToken', refreshToken, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: 'lax',
+    //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    // });
 
     // 4. Access Token은 JSON 응답으로 보내거나 쿼리 파라미터로 리다이렉트
     // 프론트엔드 대시보드로 리다이렉트 시 예시:
     // 나중에 실제 주소로 리다이렉트 할 것
-    req.res.redirect(`http://localhost:5173/onboarding?accessToken=${accessToken}`);
+    req.res.redirect(
+      `http://localhost:5173/onboarding?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+    );
   }
 
   @Get('/info')
