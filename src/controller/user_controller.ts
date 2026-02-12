@@ -40,8 +40,9 @@ export class UserController extends Controller {
     // 3. 보안 쿠키에 Refresh Token 설정
     req.res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
+      domain: 'localhost',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     });
 
