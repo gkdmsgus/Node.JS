@@ -15,12 +15,15 @@ model alba_posting {
   main_task     String?         @db.Text
   requirement   String?         @db.Text
   notification  String?         @db.Text
+  region_id     Int?
+  region        region?         @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction, map: "FK_region_TO_posting")
   store         store           @relation(fields: [store_id], references: [store_id], onDelete: Cascade, onUpdate: NoAction, map: "FK_store_TO_posting")
   user_alba     user_alba[]
   user_work_log user_work_log[]
   work_schedule work_schedule?
 
   @@index([store_id], map: "FK_store_TO_posting")
+  @@index([region_id], map: "FK_region_TO_posting")
 }
 
 model category {
@@ -65,6 +68,7 @@ model region {
   region_id             Int                     @id
   city                  String?                 @db.VarChar(10)
   district              String?                 @db.VarChar(10)
+  alba_posting          alba_posting[]
   user_preferred_region user_preferred_region[]
 }
 
