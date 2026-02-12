@@ -44,6 +44,53 @@ export class UserAlbaScheduleRepository {
     return created.user_alba_schedule_id;
   }
 
+  /**
+   * 스케줄 생성 + work_log 동시 생성 (트랜잭션)
+   * 수동 일정 생성 시 홈 리스트에 노출되도록 user_work_log도 함께 생성
+   */
+  public async createWithWorkLog(
+    userId: string,
+    input: CreateUserAlbaScheduleRepoInput,
+    workLogData: { workDate: Date; startTime: Date | null; endTime: Date | null; workMinutes: number | null },
+  ): Promise<Uint8Array> {
+    const userIdBin = uuidToBin(userId);
+
+    const schedule = await prisma.$transaction(async (tx) => {
+      // 1. 일정 생성
+      const created = await tx.user_alba_schedule.create({
+        data: {
+          user_id: userIdBin,
+          workplace: input.workplace ?? null,
+          work_date: input.work_date ?? null,
+          work_time: input.work_time ?? null,
+          day_of_week: input.day_of_week ?? null,
+          repeat_type: input.repeat_type ?? null,
+          repeat_days: input.repeat_days ?? null,
+          hourly_wage: input.hourly_wage ?? null,
+          memo: input.memo ?? null,
+        },
+        select: { user_alba_schedule_id: true },
+      });
+
+      // 2. work_log 생성 (schedule_id 연결)
+      await tx.user_work_log.create({
+        data: {
+          user_id: userIdBin,
+          user_alba_schedule_id: created.user_alba_schedule_id,
+          work_date: workLogData.workDate,
+          start_time: workLogData.startTime,
+          end_time: workLogData.endTime,
+          work_minutes: workLogData.workMinutes,
+          status: 'scheduled',
+        },
+      });
+
+      return created;
+    });
+
+    return schedule.user_alba_schedule_id;
+  }
+
   public async updateByIdAndUserId(
     userId: string,
     scheduleId: string,
