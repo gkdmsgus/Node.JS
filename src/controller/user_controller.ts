@@ -100,6 +100,24 @@ export class UserController extends Controller {
   }
 
   /**
+   * 유저 프로필 이미지 호출 API
+   * @param req
+   * @returns 이미지 url
+   * @summary 유저 프로필 이미지 호출 API
+   */
+  @Get('/profile')
+  @Security('jwt')
+  public async getUserProfileImage(
+    @Request() req: ExpressRequest,
+  ): Promise<TsoaSuccessResponse<string>> {
+    const userId = (req.user as unknown as { id: string }).id;
+
+    const userInfo = await UserService.getUserProfileImageService(userId);
+
+    return new TsoaSuccessResponse<string>(userInfo);
+  }
+
+  /**
    * 상세 회원가입 api
    * @param req
    * @param body

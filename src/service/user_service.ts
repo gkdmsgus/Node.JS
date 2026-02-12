@@ -15,6 +15,14 @@ class UserService {
     return accessToken;
   }
 
+  static async getUserProfileImageService(userId: string) {
+    const parsedId = uuidToBin(userId);
+
+    const user = await UserRepository.findUserById(parsedId);
+
+    return user.profile_image;
+  }
+
   /**
    * 유저 상세 정보 등록 (회원가입)
    * @param userId - 유저 ID (Buffer)
