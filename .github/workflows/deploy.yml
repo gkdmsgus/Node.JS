@@ -37,6 +37,7 @@ jobs:
           rsync -avz --delete \
             --exclude '.git*' \
             --exclude 'node_modules' \
+            --exclude 'data' \
             ./ albalog:/app/
 
       - name: Configure env
