@@ -45,6 +45,42 @@ function validateManual(body: CreateManualScheduleBody) {
   }
 }
 
+/**
+ * work_time("09:00-18:00")과 work_date("2026-02-10")를 파싱하여
+ * user_work_log에 필요한 Date 객체를 생성
+ */
+function parseScheduleToWorkLogData(workDate?: string, workTime?: string) {
+  if (!workDate) return null;
+
+  // work_date는 Date 타입이므로 UTC midnight으로 저장하여 날짜가 밀리지 않도록 처리
+  const date = new Date(workDate + 'T00:00:00Z');
+
+  let startTime: Date | null = null;
+  let endTime: Date | null = null;
+  let workMinutes: number | null = null;
+
+  if (workTime) {
+    const [startStr, endStr] = workTime.split('-');
+    if (startStr) {
+      const [sh, sm] = startStr.split(':').map(Number);
+      startTime = new Date(workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`);
+    }
+    if (endStr) {
+      const [eh, em] = endStr.split(':').map(Number);
+      endTime = new Date(workDate + `T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00+09:00`);
+      // 야간 근무 (종료 시간이 시작 시간보다 이전)
+      if (endTime <= startTime!) {
+        endTime.setDate(endTime.getDate() + 1);
+      }
+    }
+    if (startTime && endTime) {
+      workMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
+    }
+  }
+
+  return { workDate: date, startTime, endTime, workMinutes };
+}
+
 // 유저 수동 입력 스케줄 생성
 export async function createManual(
   userId: string,
@@ -52,7 +88,7 @@ export async function createManual(
 ): Promise<string> {
   validateManual(body);
 
-  const idBin = await scheduleRepo.create(userId, {
+  const scheduleInput = {
     workplace: body.workplace,
     work_date: body.work_date,
     work_time: body.work_time,
@@ -61,7 +97,17 @@ export async function createManual(
     repeat_days: body.repeat_days,
     hourly_wage: body.hourly_wage,
     memo: body.memo,
-  });
+  };
+
+  // work_date가 있으면 work_log도 함께 생성 (홈 리스트 노출용)
+  const workLogData = parseScheduleToWorkLogData(body.work_date, body.work_time);
+
+  let idBin: Uint8Array;
+  if (workLogData) {
+    idBin = await scheduleRepo.createWithWorkLog(userId, scheduleInput, workLogData);
+  } else {
+    idBin = await scheduleRepo.create(userId, scheduleInput);
+  }
 
   return binToUuid(idBin);
 }

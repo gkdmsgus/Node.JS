@@ -47,8 +47,7 @@ export class UserPreferredRegionController extends Controller {
     const userId = (req.user as unknown as { id: string }).id;
 
     const userIdBuffer = uuidToBuffer(userId);
-    const result =
-      await UserPreferredRegionService.getPreferredRegions(userIdBuffer);
+    const result = await UserPreferredRegionService.getPreferredRegions(userIdBuffer);
 
     return new TsoaSuccessResponse(result);
   }
@@ -117,10 +116,7 @@ export class UserPreferredRegionController extends Controller {
     const userIdBuffer = uuidToBuffer(userId);
 
     try {
-      await UserPreferredRegionService.removePreferredRegion(
-        userIdBuffer,
-        regionId,
-      );
+      await UserPreferredRegionService.removePreferredRegion(userIdBuffer, regionId);
       this.setStatus(204);
     } catch (error) {
       if (error instanceof Error && error.message.includes('등록되지 않은')) {
@@ -136,7 +132,7 @@ export class UserPreferredRegionController extends Controller {
  */
 @Route('api/regions')
 @Tags('Region')
-export class RegionController extends Controller {
+export class RegionsController extends Controller {
   /**
    * 지역 목록 검색 API
    * @param city 시/도 (선택)
@@ -150,10 +146,7 @@ export class RegionController extends Controller {
     @Query() city?: string,
     @Query() district?: string,
   ): Promise<TsoaSuccessResponse<RegionListResponseDto>> {
-    const result = await UserPreferredRegionService.searchRegions(
-      city,
-      district,
-    );
+    const result = await UserPreferredRegionService.searchRegions(city, district);
     return new TsoaSuccessResponse(result);
   }
 }

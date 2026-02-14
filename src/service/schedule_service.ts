@@ -26,17 +26,22 @@ class ScheduleService {
       data.hourlyWage,
     );
 
-    // 3. 데이터베이스에 일정 저장
-    const schedule = await ScheduleRepository.createSchedule({
+    // 3. work_log용 시간 데이터 파싱
+    const workLogData = this.parseWorkLogData(data.workDate, data.startTime, data.endTime);
+
+    // 4. 데이터베이스에 일정 + work_log 저장 (트랜잭션)
+    const scheduleData = {
       user_id: userId,
       workplace: data.workplace,
       work_date: data.workDate,
       work_time: workTime,
       hourly_wage: data.hourlyWage,
       memo: data.memo,
-    });
+    };
 
-    // 4. DTO 형식으로 반환
+    const schedule = await ScheduleRepository.createScheduleWithWorkLog(scheduleData, workLogData);
+
+    // 5. DTO 형식으로 반환
     return {
       scheduleId: this.bufferToUuid(schedule.user_alba_schedule_id),
       workplace: schedule.workplace || '',
@@ -46,6 +51,33 @@ class ScheduleService {
       estimatedWage: estimatedWage,
       memo: schedule.memo || '',
     };
+  }
+
+  /**
+   * 일정 데이터를 work_log용 Date 객체로 변환
+   */
+  private parseWorkLogData(
+    workDate: string,
+    startTime: string,
+    endTime: string,
+  ): { workDate: Date; startTime: Date | null; endTime: Date | null; workMinutes: number | null } {
+    // work_date는 Date 타입이므로 UTC midnight으로 저장하여 날짜가 밀리지 않도록 처리
+    const date = new Date(workDate + 'T00:00:00Z');
+
+    const [sh, sm] = startTime.split(':').map(Number);
+    const start = new Date(workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`);
+
+    const [eh, em] = endTime.split(':').map(Number);
+    const end = new Date(workDate + `T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00+09:00`);
+
+    // 야간 근무 (종료 시간이 시작 시간보다 이전)
+    if (end <= start) {
+      end.setDate(end.getDate() + 1);
+    }
+
+    const workMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+
+    return { workDate: date, startTime: start, endTime: end, workMinutes };
   }
 
   /**
