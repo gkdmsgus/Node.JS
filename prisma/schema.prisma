@@ -157,8 +157,8 @@ model user_alba {
 model user_alba_schedule {
   user_alba_schedule_id Bytes                           @id @default(dbgenerated("(uuid_to_bin(uuid()))")) @db.Binary(16)
   user_id               Bytes                           @db.Binary(16)
-  workplace             String?                         @db.VarChar(20)
-  work_date             String?                         @db.VarChar(20)
+  workplace             String?                         @db.VarChar(50)
+  work_date             String?                         @db.VarChar(50)
   work_time             String?                         @db.VarChar(20)
   day_of_week           user_alba_schedule_day_of_week?
   repeat_type           user_alba_schedule_repeat_type?
