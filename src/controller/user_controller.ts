@@ -87,8 +87,10 @@ export class UserController extends Controller {
   })
   public async refreshAccessToken(
     @Request() req: ExpressRequest,
+    @Body() body: { refreshToken: string },
   ): Promise<TsoaSuccessResponse<string>> {
-    const { refreshToken } = req.cookies || {};
+    //const { refreshToken } = req.cookies || {};
+    const { refreshToken } = body;
 
     if (refreshToken === undefined) {
       throw new UserNotFoundError();
