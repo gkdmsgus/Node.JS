@@ -74,7 +74,7 @@ export class UserController extends Controller {
    * @summary 액세스 토큰 재발급 API
    * @returns 재발급된 액세스 토큰
    */
-  @Get('/auth/refresh')
+  @Post('/auth/refresh')
   @SuccessResponse('200', 'Success')
   @Response<TsoaFailResponse<string>>('401', 'Unauthorized', {
     resultType: ResultType.FAIL,
