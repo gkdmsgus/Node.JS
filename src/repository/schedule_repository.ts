@@ -44,6 +44,8 @@ class ScheduleRepository {
       work_time: string;
       hourly_wage: number;
       memo?: string;
+      address?: string;
+      category?: string;
     },
     workLogData: {
       workDate: Date;
@@ -62,6 +64,8 @@ class ScheduleRepository {
           work_time: scheduleData.work_time,
           hourly_wage: scheduleData.hourly_wage,
           memo: scheduleData.memo || null,
+          address: scheduleData.address || null,
+          category: scheduleData.category || null,
           repeat_type: 'none',
         },
       });

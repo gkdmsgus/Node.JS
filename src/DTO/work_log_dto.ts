@@ -11,6 +11,8 @@ export interface TodayScheduleResponseDto {
   workHours: number; // 4
   hourlyWage: number; // 11000
   totalWage: number; // 44000
+  address: string;
+  category: string;
 }
 
 /**

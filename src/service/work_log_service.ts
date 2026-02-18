@@ -76,6 +76,14 @@ class WorkLogService {
         }
       }
 
+      let address = '';
+      let category = '';
+
+      if (log.user_alba_schedule) {
+        address = log.user_alba_schedule.address || '';
+        category = log.user_alba_schedule.category || '';
+      }
+
       const totalWage = Math.round(hourlyWage * workHours);
       const status = log.status || 'scheduled';
 
@@ -89,6 +97,8 @@ class WorkLogService {
         workHours,
         hourlyWage,
         totalWage,
+        address,
+        category,
       };
     });
 

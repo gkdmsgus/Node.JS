@@ -115,6 +115,10 @@ class WorkLogRepository {
           store_name: string | null;
         };
       } | null;
+      user_alba_schedule: {
+        address: string | null;
+        category: string | null;
+      } | null;
     }[]
   > {
     // KST 기준 오늘 날짜를 YYYY-MM-DD로 구한 뒤 UTC midnight 범위로 설정
@@ -140,6 +144,12 @@ class WorkLogRepository {
                 store_name: true,
               },
             },
+          },
+        },
+        user_alba_schedule: {
+          select: {
+            address: true,
+            category: true,
           },
         },
       },

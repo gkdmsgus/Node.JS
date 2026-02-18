@@ -37,6 +37,8 @@ class ScheduleService {
       work_time: workTime,
       hourly_wage: data.hourlyWage,
       memo: data.memo,
+      address: data.address,
+      category: data.category,
     };
 
     const schedule = await ScheduleRepository.createScheduleWithWorkLog(scheduleData, workLogData);
@@ -50,6 +52,8 @@ class ScheduleService {
       hourlyWage: schedule.hourly_wage || 0,
       estimatedWage: estimatedWage,
       memo: schedule.memo || '',
+      address: schedule.address || '',
+      category: schedule.category || '',
     };
   }
 
@@ -65,10 +69,14 @@ class ScheduleService {
     const date = new Date(workDate + 'T00:00:00Z');
 
     const [sh, sm] = startTime.split(':').map(Number);
-    const start = new Date(workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`);
+    const start = new Date(
+      workDate + `T${String(sh).padStart(2, '0')}:${String(sm).padStart(2, '0')}:00+09:00`,
+    );
 
     const [eh, em] = endTime.split(':').map(Number);
-    const end = new Date(workDate + `T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00+09:00`);
+    const end = new Date(
+      workDate + `T${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00+09:00`,
+    );
 
     // 야간 근무 (종료 시간이 시작 시간보다 이전)
     if (end <= start) {
@@ -88,11 +96,7 @@ class ScheduleService {
    * @param hourlyWage - 시급
    * @returns 예상 금액
    */
-  private calculateEstimatedWage(
-    startTime: string,
-    endTime: string,
-    hourlyWage: number,
-  ): number {
+  private calculateEstimatedWage(startTime: string, endTime: string, hourlyWage: number): number {
     // 시간 파싱 (HH:MM 형식)
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);

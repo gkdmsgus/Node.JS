@@ -25,6 +25,16 @@ export interface CreateScheduleRequestDto {
 
   /** 메모 (선택사항) */
   memo?: string;
+
+  /**
+   * 프론트측 요청으로 인한 근무지 및 카테고리 추가
+   * 카카오 API 정보 입력용
+   */
+  /**근무지 주소 (선택사항) */
+  address?: string;
+
+  /**근무 카테고리 (선택사항) */
+  category?: string;
 }
 
 /**
@@ -51,4 +61,7 @@ export interface ScheduleResponseDto {
 
   /** 메모 */
   memo: string;
+
+  address: string;
+  category: string;
 }
